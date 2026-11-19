@@ -147,7 +147,27 @@ do $t$ begin
   insert into _r(msg) values ('PASS: A''s data is exactly as A left it');
 end $t$;
 
--- 6. Someone not signed in.
+-- 6. Oversized text is refused by the database itself, whatever the page allows.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '99999999-0000-4000-8000-00000000000a', true);
+do $t$
+declare a uuid := '88888888-0000-4000-8000-00000000000a'; n int := 0; s text;
+begin
+  foreach s in array array[
+    format('update public.businesses set name = %L where id = %L', repeat('x', 201), a),
+    format('update public.businesses set vat_number = %L where id = %L', repeat('9', 21), a),
+    format('insert into public.customers(business_id, name, email) values (%L, %L, %L)', a, 'C', repeat('e', 255)),
+    format('update public.accounts set name = %L where business_id = %L and code = ''7500''', repeat('x', 101), a)
+  ] loop
+    begin execute s; raise exception 'FAIL: oversized text accepted: %', left(s, 60);
+    exception when check_violation then n := n + 1; end;
+  end loop;
+  update public.businesses set name = 'A Trading Ltd' where id = a;
+  insert into _r(msg) values (format('PASS: the database refuses oversized form input (%s cases) and still accepts normal edits', n));
+end $t$;
+reset role;
+
+-- 7. Someone not signed in.
 set local role anon;
 select set_config('request.jwt.claim.sub', '', true);
 do $t$ begin

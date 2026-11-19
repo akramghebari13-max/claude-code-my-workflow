@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 // HMRC sends the user back here after they sign in. The single-use `state` value written by
 // startHmrcAuth is what proves this callback belongs to a business that asked for it.
+const STATE_MAX_AGE_MS = 15 * 60_000;
+
 export const Route = createFileRoute("/api/public/hmrc/callback")({
   server: {
     handlers: {
@@ -22,7 +24,8 @@ export const Route = createFileRoute("/api/public/hmrc/callback")({
         await supabaseAdmin.from("hmrc_oauth_states").delete().eq("state", state);
         await supabaseAdmin.from("hmrc_oauth_states").delete().lt("created_at", new Date(Date.now() - 86_400_000).toISOString());
 
-        if (!st) return go(null, "?hmrc=invalid");
+        // A sign-in takes minutes; an old, unused state is refused.
+        if (!st || Date.now() - new Date(st.created_at).getTime() > STATE_MAX_AGE_MS) return go(null, "?hmrc=invalid");
         if (denied) return st.purpose === "itsa"
           ? Response.redirect(new URL(`/b/${st.business_id}/reports?hmrc=cancelled`, url.origin), 302)
           : go(st.business_id, "?hmrc=cancelled");
