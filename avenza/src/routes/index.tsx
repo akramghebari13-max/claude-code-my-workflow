@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/accordion";
 import { UkMapHero } from "@/components/uk-map-hero";
 import { PLAN, PLAN_PRICE_TEXT } from "@/lib/billing";
+import { InstallAppButton } from "@/components/install-app";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -369,6 +370,7 @@ function Index() {
             <Button asChild variant="outline" className={ghostBtn}>
               <Link to="/auth">Sign in</Link>
             </Button>
+            <InstallAppButton className={ghostBtn} />
           </div>
         </div>
       </section>

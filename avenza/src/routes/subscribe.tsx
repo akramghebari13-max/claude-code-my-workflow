@@ -14,6 +14,7 @@ import {
   unlocksApp,
 } from "@/lib/billing";
 import { finishCheckout, openBillingPortal, startCheckout } from "@/lib/billing.functions";
+import { isNativeApp } from "@/lib/platform";
 
 export const Route = createFileRoute("/subscribe")({
   ssr: false,
@@ -110,6 +111,8 @@ function Subscribe() {
   const row = sub.data;
   const active = unlocksApp(row);
   const trial = trialEligible(row);
+  // App Store and Google Play rules: no prices or outside payment links in the store apps.
+  const native = isNativeApp();
 
   return (
     <div className="min-h-screen bg-background">
@@ -139,64 +142,79 @@ function Subscribe() {
               : describeSubscription(row)}
         </p>
 
-        <section className="mt-8 rounded-2xl border bg-card p-8">
-          <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-primary">
-            AVENZA
-          </p>
-          <p className="mt-3 font-display text-5xl font-semibold text-primary">
-            {PLAN_PRICE_TEXT}
-            <span className="ml-1 font-sans text-base text-muted-foreground">/ month</span>
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {trial
-              ? `${PLAN.trialDays}-day free trial. Cancel any time before it ends and you won't be charged.`
-              : "Cancel any time."}
-          </p>
-          <ul className="mt-6 grid gap-3 text-base">
-            {INCLUDED.map((f) => (
-              <li key={f} className="flex items-start gap-3">
-                <Check className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
-                {f}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-8 grid gap-3">
+        {native ? (
+          <section className="mt-8 rounded-2xl border bg-card p-8">
             {active ? (
-              <Button asChild className="h-12 rounded-full text-base">
+              <Button asChild className="h-12 w-full rounded-full text-base">
                 <Link to="/dashboard">Go to your books</Link>
               </Button>
             ) : (
-              <Button
-                className="h-12 rounded-full text-base"
-                disabled={busy || sub.isLoading}
-                onClick={() => go(checkout)}
-              >
-                {busy
-                  ? "Opening secure checkout…"
-                  : trial
-                    ? "Start free trial"
-                    : `Subscribe for ${PLAN_PRICE_TEXT} a month`}
-              </Button>
-            )}
-            {row?.stripe_customer_id && (
-              <Button
-                variant="outline"
-                className="h-11 rounded-full"
-                disabled={busy}
-                onClick={() => go(portal)}
-              >
-                Manage billing
-              </Button>
-            )}
-          </div>
-          <div aria-live="polite">
-            {error && (
-              <p role="alert" className="mt-4 text-sm text-destructive">
-                {error}
+              <p className="text-base">
+                This account doesn't have an active subscription, so its books can't be opened in
+                this app.
               </p>
             )}
-          </div>
-        </section>
+          </section>
+        ) : (
+          <section className="mt-8 rounded-2xl border bg-card p-8">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-primary">
+              AVENZA
+            </p>
+            <p className="mt-3 font-display text-5xl font-semibold text-primary">
+              {PLAN_PRICE_TEXT}
+              <span className="ml-1 font-sans text-base text-muted-foreground">/ month</span>
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {trial
+                ? `${PLAN.trialDays}-day free trial. Cancel any time before it ends and you won't be charged.`
+                : "Cancel any time."}
+            </p>
+            <ul className="mt-6 grid gap-3 text-base">
+              {INCLUDED.map((f) => (
+                <li key={f} className="flex items-start gap-3">
+                  <Check className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 grid gap-3">
+              {active ? (
+                <Button asChild className="h-12 rounded-full text-base">
+                  <Link to="/dashboard">Go to your books</Link>
+                </Button>
+              ) : (
+                <Button
+                  className="h-12 rounded-full text-base"
+                  disabled={busy || sub.isLoading}
+                  onClick={() => go(checkout)}
+                >
+                  {busy
+                    ? "Opening secure checkout…"
+                    : trial
+                      ? "Start free trial"
+                      : `Subscribe for ${PLAN_PRICE_TEXT} a month`}
+                </Button>
+              )}
+              {row?.stripe_customer_id && (
+                <Button
+                  variant="outline"
+                  className="h-11 rounded-full"
+                  disabled={busy}
+                  onClick={() => go(portal)}
+                >
+                  Manage billing
+                </Button>
+              )}
+            </div>
+            <div aria-live="polite">
+              {error && (
+                <p role="alert" className="mt-4 text-sm text-destructive">
+                  {error}
+                </p>
+              )}
+            </div>
+          </section>
+        )}
         <p className="mt-6 text-xs text-muted-foreground">
           Payments are handled by Stripe. Your records stay yours: if you stop paying, your data is
           kept, and you can come back to it by subscribing again.

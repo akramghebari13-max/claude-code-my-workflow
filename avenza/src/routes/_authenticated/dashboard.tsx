@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BUSINESS_TYPE_LABEL, myBusinessesQuery } from "@/lib/businesses";
+import { InstallAppButton } from "@/components/install-app";
+import { isNativeApp } from "@/lib/platform";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Your businesses — AVENZA" }, { name: "description", content: "Choose a business to manage." }] }),
@@ -32,7 +34,9 @@ function Dashboard() {
           <span className="font-display text-xl font-semibold text-primary">AVENZA</span>
           <div className="flex items-center gap-3">
             <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>
-            <Button asChild variant="ghost" size="sm"><Link to="/subscribe">Billing</Link></Button>
+            <InstallAppButton />
+            {/* Store apps can't link to payments outside Apple/Google billing. */}
+            {!isNativeApp() && <Button asChild variant="ghost" size="sm"><Link to="/subscribe">Billing</Link></Button>}
             <Button variant="ghost" size="sm" onClick={signOut}>Sign out</Button>
           </div>
         </div>

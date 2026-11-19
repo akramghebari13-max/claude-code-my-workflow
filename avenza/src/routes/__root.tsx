@@ -91,6 +91,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#0E3526" },
       { name: "apple-mobile-web-app-title", content: "AVENZA" },
+      // Full-screen when opened from the home screen (iPhone/iPad and Android).
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
           ],
     links: [
       {

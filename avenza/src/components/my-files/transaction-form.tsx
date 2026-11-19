@@ -24,7 +24,7 @@ import type {
 import type { PostgrestSingleResponse } from "@supabase/supabase-js";
 
 export const selectClass =
-  "h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "h-11 w-full rounded-md border border-input bg-background px-3 text-base md:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 type Props = {
   categories: PersonalCategory[];
