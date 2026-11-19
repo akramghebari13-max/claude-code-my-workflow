@@ -51,8 +51,8 @@ function Privacy() {
         <ul>
           <li>
             <strong>Your account:</strong> name, email address and password (stored only as a secure
-            hash), or the name and email from your Google or Lovable account if you sign in with one
-            of those.
+            hash), or the name and email from your Apple, Google or Lovable account if you sign in
+            with one of those (with Apple you can choose to hide your real email).
           </li>
           <li>
             <strong>Your businesses' books:</strong> business details (name, address, company
@@ -122,8 +122,8 @@ function Privacy() {
             turned off.
           </li>
           <li>
-            <strong>Google or Lovable</strong>: if you sign in with them. Our pages also load fonts
-            from Google Fonts, which sees your IP address.
+            <strong>Apple, Google or Lovable</strong>: if you sign in with them. Our pages also load
+            fonts from Google Fonts, which sees your IP address.
           </li>
           <li>
             People you invite to a business (such as your accountant) see that business's books, not
