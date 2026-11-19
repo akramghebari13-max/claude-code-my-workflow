@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { aiLimitMessage } from "./ai/limits";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { todayUK } from "./app";
 import { monthStartISO } from "./myfiles";
@@ -33,6 +34,8 @@ export const askMyFiles = createServerFn({ method: "POST" })
         answer: "There is nothing saved yet. Add a document or transaction first.",
         generatedAt: metadata.generated_at,
       };
+    const limited = await aiLimitMessage(sb, "myfiles_question");
+    if (limited) return { ok: false as const, message: limited };
     const { answerFromFacts } = await import("./myfiles-assistant.server");
     const result = await answerFromFacts(facts.data, data.question);
     // Provider denials are reported for this request only; the next question tries again.

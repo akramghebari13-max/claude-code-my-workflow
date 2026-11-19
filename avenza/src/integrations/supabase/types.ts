@@ -1645,6 +1645,7 @@ export type Database = {
         }
         Returns: string
       }
+      take_ai_slot: { Args: { _kind: string }; Returns: boolean }
       uk_today: { Args: never; Returns: string }
       vat_return_preview: {
         Args: { _business_id: string; _end: string; _start: string }

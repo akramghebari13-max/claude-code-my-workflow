@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { aiLimitMessage } from "./ai/limits";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { extractionCutoff, extractionSchema, sanitizeExtraction } from "./myfiles-extraction";
 
@@ -31,6 +32,10 @@ export const extractDocument = createServerFn({ method: "POST" })
         message:
           "AI access denied: access must be restored before reading another document. Enter the details by hand.",
       };
+    if (!process.env["LOVABLE_API_KEY"])
+      return { ok: false, message: "AI reading is not configured. Enter the details by hand." };
+    const limited = await aiLimitMessage(sb, "document_read");
+    if (limited) return { ok: false, message: limited };
     const { data: claimed, error: claimError } = await sb
       .from("pf_documents")
       .update({ status: "processing", error_message: null })

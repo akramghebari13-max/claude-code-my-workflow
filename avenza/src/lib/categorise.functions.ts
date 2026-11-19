@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { aiLimitMessage } from "./ai/limits";
 import { historyFromTransactions, historyMatch, pickCategory, type CatOption } from "./categorise";
 
 /** Suggest a category for one bank line: past history first, then Lovable AI. Never posts anything. */
@@ -25,6 +26,8 @@ export const suggestCategory = createServerFn({ method: "POST" })
 
     const apiKey = process.env["LOVABLE_API_KEY"];
     if (!apiKey) return { categoryId: null, source: null };
+    // Over the allowance: no suggestion, the person just picks the category.
+    if (await aiLimitMessage(sb, "bank_category")) return { categoryId: null, source: null };
     try {
       const { createOpenAI } = await import("@ai-sdk/openai");
       const { streamText } = await import("ai");

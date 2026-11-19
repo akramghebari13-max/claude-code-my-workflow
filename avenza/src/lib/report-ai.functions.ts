@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { aiLimitMessage } from "./ai/limits";
 import { buildBalanceSheet, buildPnl, corporationTaxPence, soleTraderTaxPence, type Bal } from "./reports";
 
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
@@ -36,6 +37,8 @@ export const askAboutReport = createServerFn({ method: "POST" })
     ];
     if (isLtd) lines.push(`Estimated Corporation Tax: ${gbp(corporationTaxPence(pnl.profit))} (19% up to £50k, 25% from £250k, marginal relief between; before adjustments)`);
     else { const t = soleTraderTaxPence(pnl.profit); lines.push(`Estimated Income Tax: ${gbp(t.incomeTax)}, Class 4 NI: ${gbp(t.class4)} (assumes no other income; England/Wales/NI: £12,570 personal allowance tapered above £100k, 20% to £50,270, 40% to £125,140, 45% above; Class 4 NI 6% on £12,570–£50,270 and 2% above)`); }
+    const limited = await aiLimitMessage(sb, "report_question");
+    if (limited) return { error: limited };
     const { explainReport } = await import("./ai/report-explain.server");
     return explainReport(lines.join("\n"), data.question);
   });

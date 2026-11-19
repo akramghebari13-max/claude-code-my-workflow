@@ -155,6 +155,13 @@
       "when": 1795130000000,
       "tag": "0021_text_limits",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1795140000000,
+      "tag": "0022_ai_usage_limits",
+      "breakpoints": true
     }
   ]
 }
