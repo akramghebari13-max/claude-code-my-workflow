@@ -1,0 +1,26 @@
+# Roadmap
+- [ ] My Files phase 3: narrow-phone labels, record-only assistant, monthly PDF, personal-data deletion and final verification (draft only)
+- [x] My Files phase 2 verification: 66 rolled-back privacy checks, scoped lint, typecheck/100 tests, 360px two-user walkthrough; stale Retry request simulated (no AI call)
+- [x] My Files phase 1b: personal screens, authenticated document extraction, review, transactions, categories and end-to-end isolation checks
+- [x] My Files phase 1a: private personal tables, functions, storage, helpers, and rolled-back isolation verification
+- [x] 1. Sign-in, businesses (sole trader / ltd), data isolation, audit trail
+- [x] 2. Double-entry ledger: chart of accounts, balanced journals
+- [x] 3. Transactions, income/expenses, invoicing, receipts
+- [x] 4. VAT schemes + VAT return (9 boxes, filing lock)
+- [ ] 4b. Submit VAT returns to HMRC via MTD — code built; blocked on the user's HMRC developer app credentials
+- [ ] 4c. MTD Income Tax on Reports (send figures, HMRC calculation, final declaration) — code built; untested against HMRC: blocked on the user's HMRC sandbox client ID + secret
+- [x] 5. Bank statement import (CSV) + reconciliation
+- [ ] 5b. Live Open Banking feeds — blocked: needs an Open Banking provider account (e.g. GoCardless or TrueLayer)
+- [x] 6. P&L, balance sheet, tax-year reports, tax estimates
+- [x] 7. AI categorisation (Bank reconcile pre-fills category from history, then AI), mobile app
+- [x] Audit fixes (plan in .lovable/plan/): system-journal guard, transaction void, filed-period lock, credit notes, UK dates, totals/paging, roles, errors, titles, mobile/a11y
+- [x] Ask AI about reports (plain-English explanation of income, expenses, tax estimates)
+- [x] Download P&L, balance sheet and tax estimate as PDF for a selected period
+- [x] Mobile-friendly business, Bank and Reports pages (CSV upload + report printing on phones)
+- [x] Bank matching searches all recorded money + unpaid invoices; phone card grid
+- [ ] Live bank feeds in Bank tab (GoCardless Bank Data) — building now; needs GOCARDLESS_SECRET_ID + GOCARDLESS_SECRET_KEY
+- [x] Installable phone app (home-screen icon, full-screen) — manifest only, no offline caching
+- [x] End-to-end walkthrough in the app UI: company → sale → VAT return → print P&L and balance sheet
+- [x] End-to-end walkthrough: company → sale → VAT return → P&L/balance sheet (checked in the database)
+- [ ] End-to-end bank walkthrough: upload statement, reconcile a line, check category suggestion + recorded entry
+- [ ] Quarterly Income Tax updates on Reports (pick quarter, deadlines)

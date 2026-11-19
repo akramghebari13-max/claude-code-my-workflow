@@ -1,0 +1,125 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1795001414248,
+      "tag": "0000_accounts_and_businesses",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795001775808,
+      "tag": "0001_double_entry_ledger",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795002213011,
+      "tag": "0002_transactions_invoices_receipts",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795003770637,
+      "tag": "0003_vat_returns",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795004251788,
+      "tag": "0004_hmrc_compliance_fixes",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795004566983,
+      "tag": "0005_bank_reconciliation",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795004802812,
+      "tag": "0006_period_reports",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795005525183,
+      "tag": "0007_book_integrity_fixes",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795005563076,
+      "tag": "0008_journal_sources",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795006372796,
+      "tag": "0009_bank_match_candidates",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795007059268,
+      "tag": "0010_hmrc_filing",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795007814332,
+      "tag": "0011_hmrc_income_tax",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795074737969,
+      "tag": "0012_pf_private_personal_files",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1795077016521,
+      "tag": "0013_pf_phase2_bills_budgets_goals_notifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1795079261291,
+      "tag": "0014_pf_phase3_assistant_and_privacy",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1795084072160,
+      "tag": "0015_pf_remove_assistant_denial_marker",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1795084616914,
+      "tag": "0016_pf_drop_assistant_take_slot",
+      "breakpoints": true
+    }
+  ]
+}

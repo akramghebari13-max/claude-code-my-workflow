@@ -1,0 +1,289 @@
+/*
+ * Tailwind v4 entry: config lives here, with no tailwind.config.js or PostCSS plugin.
+ * - Keep every @import in this top block, above @theme and the rest of the file. Install an
+ *   npm package before @importing its CSS. Never @import a remote URL (web fonts, CDN CSS): the
+ *   build resolves @import from the filesystem. Load those with a <link> in the head() of
+ *   src/routes/__root.tsx and name the family in a --font-* token in @theme inline below.
+ */
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The design lives in this file: oklch color tokens on the shadcn variables
+ * (--background, --foreground, --primary, --secondary, --muted, --accent, ...) plus
+ * new tokens as needed, font tokens, and custom styles and animations.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-land-deep: var(--land-deep);
+  --color-land-fog: var(--land-fog);
+  --color-land-mint: var(--land-mint);
+  --color-land-lime: var(--land-lime);
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(0.975 0.008 85);
+  --foreground: oklch(0.22 0.03 165);
+  --card: oklch(0.995 0.004 85);
+  --card-foreground: oklch(0.22 0.03 165);
+  --popover: oklch(0.995 0.004 85);
+  --popover-foreground: oklch(0.22 0.03 165);
+  --primary: oklch(0.36 0.07 165);
+  --primary-foreground: oklch(0.97 0.01 85);
+  --secondary: oklch(0.93 0.015 85);
+  --secondary-foreground: oklch(0.25 0.04 165);
+  --muted: oklch(0.94 0.012 85);
+  --muted-foreground: oklch(0.48 0.025 165);
+  --accent: oklch(0.78 0.13 75);
+  --accent-foreground: oklch(0.22 0.03 165);
+  --destructive: oklch(0.55 0.2 27);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.88 0.015 85);
+  --input: oklch(0.86 0.015 85);
+  --ring: oklch(0.45 0.07 165);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.984 0.003 247.858);
+  --sidebar-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-primary: oklch(0.208 0.042 265.755);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.968 0.007 247.896);
+  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
+  --sidebar-border: oklch(0.929 0.013 255.508);
+  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --land-deep: oklch(0.225 0.035 173);
+  --land-fog: oklch(0.827 0.026 158);
+  --land-mint: oklch(0.833 0.117 160);
+  --land-lime: oklch(0.903 0.169 125);
+}
+
+.dark {
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.208 0.042 265.755);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.929 0.013 255.508);
+  --primary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.551 0.027 264.364);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.208 0.042 265.755);
+  --sidebar-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.279 0.041 260.031);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --land-deep: oklch(0.225 0.035 173);
+  --land-fog: oklch(0.827 0.026 158);
+  --land-mint: oklch(0.833 0.117 160);
+  --land-lime: oklch(0.903 0.169 125);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
+
+@layer base {
+  body { font-family: var(--font-sans); }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
+}
+@utility ledger-rule {
+  background-image: repeating-linear-gradient(to bottom, transparent 0 31px, var(--color-border) 31px 32px);
+}
+
+/* ---- Landing page: decorative 3D UK map (see src/components/uk-map-hero.tsx) ---- */
+.uk-stage {
+  --uk-map-0: oklch(0.202 0.032 166);
+  --uk-map-1: oklch(0.238 0.042 163);
+  --uk-map-2: oklch(0.279 0.048 168);
+  --uk-map-top: oklch(0.314 0.055 167);
+  position: relative;
+  height: clamp(520px, 44vw, 600px);
+  perspective: 1600px;
+  perspective-origin: 50% 30%;
+}
+.uk-plane {
+  --tilt: 58deg;
+  --turn: -24deg;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(60%, 400px);
+  aspect-ratio: 700 / 1052;
+  transform-style: preserve-3d;
+  transform: translate(-50%, -50%) rotateX(var(--tilt)) rotateZ(var(--turn));
+  animation: uk-sway 32s ease-in-out infinite;
+}
+.uk-grid {
+  position: absolute;
+  left: -40%;
+  top: -30%;
+  width: 180%;
+  height: 160%;
+  transform: translateZ(-30px);
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--land-mint) 10%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--land-mint) 10%, transparent) 1px, transparent 1px);
+  background-size: 58px 58px;
+  -webkit-mask-image: radial-gradient(ellipse closest-side, oklch(0 0 0) 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse closest-side, oklch(0 0 0) 35%, transparent 100%);
+}
+.uk-layer { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
+.uk-layer-0 { transform: translateZ(-24px); }
+.uk-layer-1 { transform: translateZ(-16px); }
+.uk-layer-2 { transform: translateZ(-8px); }
+.uk-fill-0 { fill: var(--uk-map-0); stroke: var(--uk-map-0); stroke-width: 3; stroke-linejoin: round; }
+.uk-fill-1 { fill: var(--uk-map-1); stroke: var(--uk-map-1); stroke-width: 3; stroke-linejoin: round; }
+.uk-fill-2 { fill: var(--uk-map-2); stroke: var(--uk-map-2); stroke-width: 3; stroke-linejoin: round; }
+.uk-top-fill { fill: var(--uk-map-top); }
+.uk-dot-fill { fill: var(--land-mint); }
+.uk-top-edge { fill: none; stroke: var(--land-mint); stroke-width: 2.4; stroke-linejoin: round; opacity: 0.9; }
+.uk-route { fill: none; stroke: var(--land-lime); stroke-width: 2.2; stroke-dasharray: 3 9; stroke-linecap: round; opacity: 0.75; }
+.uk-flow { animation: uk-flow 4s linear infinite; }
+
+.uk-pin { position: absolute; width: 0; height: 0; transform-style: preserve-3d; }
+.uk-ring { position: absolute; left: -15px; top: -15px; width: 30px; height: 30px; box-sizing: border-box; border-radius: 50%; border: 2px solid var(--land-lime); animation: uk-pulse 3.2s ease-out infinite; }
+.uk-dot { position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: var(--land-lime); }
+/* billboard: cancels the plane's tilt/turn so labels and cards stand upright */
+.uk-bb { transform-origin: 50% 100%; transform: rotateZ(calc(var(--turn) * -1)) rotateX(calc(var(--tilt) * -1)); }
+.uk-label {
+  position: absolute; left: -50px; bottom: 10px; width: 100px; text-align: center;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: oklch(0.96 0.012 160);
+  text-shadow: 0 1px 6px oklch(0.15 0.03 165), 0 0 2px oklch(0.15 0.03 165);
+}
+.uk-shadow { position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(closest-side, oklch(0 0 0 / 0.55), oklch(0 0 0 / 0)); }
+
+.uk-mover { position: absolute; width: 0; height: 0; transform-style: preserve-3d; animation-duration: 30s; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+.uk-mover-a { left: 79.6%; top: 81.2%; animation-name: uk-route-a; animation-delay: -4s; }
+.uk-mover-b { left: 59.2%; top: 59.6%; animation-name: uk-route-b; animation-delay: -14s; }
+.uk-mover-c { left: 40.2%; top: 15.6%; animation-name: uk-route-c; animation-delay: -22s; }
+.uk-hop { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; animation: uk-hop 7s ease-in-out infinite; }
+.uk-hop-a { animation-duration: 7s; animation-delay: -3s; }
+.uk-hop-b { animation-duration: 6s; animation-delay: -10s; }
+.uk-hop-c { animation-duration: 8s; animation-delay: -18s; }
+
+.uk-card { position: absolute; left: -70px; bottom: 0; width: 140px; box-sizing: border-box; padding: 8px 10px; border-radius: 12px; background: var(--color-card); color: var(--color-primary); box-shadow: 0 12px 26px -8px oklch(0 0 0 / 0.55); }
+.uk-card-kind { margin: 0 0 3px; font-size: 9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-primary); }
+.uk-card-title { margin: 0; font-size: 13px; font-weight: 600; line-height: 1.2; }
+.uk-card-status { margin: 6px 0 0; display: flex; align-items: center; gap: 6px; font-size: 11px; white-space: nowrap; color: var(--color-muted-foreground); }
+.uk-card-status svg { color: var(--color-primary); flex: none; }
+
+@keyframes uk-sway {
+  0%, 100% { transform: translate(-50%, -50%) rotateX(58deg) rotateZ(-27deg); }
+  50% { transform: translate(-50%, -50%) rotateX(58deg) rotateZ(-21deg); }
+}
+@keyframes uk-hop { 0%, 100% { transform: translateZ(0); } 50% { transform: translateZ(54px); } }
+@keyframes uk-pulse { 0% { transform: scale(0.35); opacity: 0.9; } 100% { transform: scale(1.7); opacity: 0; } }
+@keyframes uk-flow { to { stroke-dashoffset: -48; } }
+@keyframes uk-route-a {
+  0%, 100% { left: 79.6%; top: 81.2%; }
+  25% { left: 67.3%; top: 87.9%; }
+  50% { left: 41%; top: 93.8%; }
+  75% { left: 55.9%; top: 81.9%; }
+}
+@keyframes uk-route-b {
+  0%, 100% { left: 59.2%; top: 59.6%; }
+  25% { left: 52%; top: 60.3%; }
+  50% { left: 66.6%; top: 60.7%; }
+  75% { left: 65.9%; top: 56.1%; }
+}
+@keyframes uk-route-c {
+  0%, 100% { left: 40.2%; top: 15.6%; }
+  25% { left: 60.6%; top: 19.2%; }
+  50% { left: 50.1%; top: 32.4%; }
+  75% { left: 39.9%; top: 33.4%; }
+}
+
+@media (max-width: 640px) {
+  .uk-plane { width: min(92%, 380px); }
+  .uk-card { scale: 0.9; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .uk-plane, .uk-mover, .uk-hop, .uk-ring, .uk-flow { animation: none; }
+}

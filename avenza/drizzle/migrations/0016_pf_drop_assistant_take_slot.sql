@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.pf_assistant_take_slot();
