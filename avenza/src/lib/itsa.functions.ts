@@ -6,8 +6,8 @@ import { hmrcErrorText } from "./hmrc";
 import { buildPnl, type Bal } from "./reports";
 import { todayUK } from "./app";
 import {
-  ITSA_SCOPES, ITSA_VERSIONS, cumulativePayload, hmrcTaxYear, normalizeNino, parseCalculation,
-  parseHmrcTaxYear, pickSelfEmployment, taxYearEnded, type ItsaCalculation,
+  ITSA_SCOPES, ITSA_VERSIONS, cumulativePayload, hmrcTaxYear, itsaQuarters, normalizeNino, parseCalculation,
+  parseHmrcTaxYear, pickSelfEmployment, taxYearEnded, ukDate, type ItsaCalculation,
 } from "./itsa";
 
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -88,17 +88,23 @@ async function session(supabase: Sb, businessId: string): Promise<Session> {
 
 const fail = (status: number, json: unknown, fallback: string) => ({ error: hmrcErrorText(status, json) ?? `${fallback} (${status || "no response"})` });
 
-/** Send this tax year's figures so far. Figures are rebuilt from the ledger here, never taken from the browser. */
+/**
+ * Send one quarterly update: the cumulative figures from 6 April to the end of the chosen quarter.
+ * Sending a quarter again replaces it (that's how corrections work). Figures are rebuilt from the
+ * ledger here, never taken from the browser.
+ */
 export const itsaSendFigures = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { businessId: string; taxYear: string; fraud?: Record<string, string> }) => base(i))
+  .inputValidator((i: { businessId: string; taxYear: string; quarter: number; fraud?: Record<string, string> }) => {
+    const b = base(i);
+    if (![1, 2, 3, 4].includes(i?.quarter)) throw new Error("Invalid request");
+    return { ...b, quarter: i.quarter };
+  })
   .handler(async ({ data, context }) => {
     const start = parseHmrcTaxYear(data.taxYear);
     if (start === null) return { error: "Pick a tax year." };
-    const today = todayUK();
-    const from = `${start}-04-06`;
-    if (today < from) return { error: "That tax year hasn't started yet." };
-    const to = today > `${start + 1}-04-05` ? `${start + 1}-04-05` : today;
+    const { from, to } = itsaQuarters(start)[data.quarter - 1]!;
+    if (todayUK() <= to) return { error: `This quarter ends on ${ukDate(to)}. You can send it from the next day.` };
     const s = await session(context.supabase, data.businessId);
     if (s.error !== undefined) return { error: s.error };
     const { hmrcCall, sanitizeFraud } = await import("./hmrc.server");
@@ -121,7 +127,7 @@ export const itsaSendFigures = createServerFn({ method: "POST" })
 
     await context.supabase.rpc("record_itsa_submission", {
       _business_id: data.businessId, _tax_year: data.taxYear, _kind: "figures", _hmrc_business_id: source.id,
-      _figures: figures as unknown as Json, _calculation_id: null as unknown as string,
+      _figures: { ...figures, quarter: data.quarter } as unknown as Json, _calculation_id: null as unknown as string,
       _receipt: { status: res.status, body: res.json } as unknown as Json, _is_sandbox: s.sandbox,
     });
     return { ok: true as const, figures, sourceName: source.name };

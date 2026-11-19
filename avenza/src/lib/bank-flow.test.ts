@@ -7,7 +7,8 @@ import { describe, expect, it } from "vitest";
 import { parseBankCsv } from "./bank";
 import { historyFromTransactions, historyMatch } from "./categorise";
 
-const fixture = (name: string) => readFileSync(resolve(__dirname, "../../db-tests/fixtures", name), "utf8");
+const fixture = (name: string) =>
+  readFileSync(resolve(__dirname, "../../db-tests/fixtures", name), "utf8");
 
 describe("Bank tab, end to end (app side)", () => {
   const { lines, errors } = parseBankCsv(fixture("statement.csv"));
@@ -31,7 +32,9 @@ describe("Bank tab, end to end (app side)", () => {
   });
 
   it("learns from lines reconciled earlier, whose payee is the bank wording", () => {
-    const past = historyFromTransactions([{ counterparty: "CARD PAYMENT SCREWFIX DIRECT 1022", category_account_id: "5000" }]);
+    const past = historyFromTransactions([
+      { counterparty: "CARD PAYMENT SCREWFIX DIRECT 1022", category_account_id: "5000" },
+    ]);
     expect(historyMatch("CARD PAYMENT SCREWFIX DIRECT 4417", past)).toBe("5000");
   });
 });

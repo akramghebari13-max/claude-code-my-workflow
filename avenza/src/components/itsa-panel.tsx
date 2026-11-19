@@ -7,12 +7,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { collectHmrcFraudData } from "@/lib/hmrc";
-import { hmrcTaxYear, taxYearEnded, type ItsaCalculation } from "@/lib/itsa";
+import {
+  finalDeclarationDeadline, hmrcTaxYear, itsaQuarters, nextQuarter, quarterStatus, taxYearEnded, ukDate,
+  type ItsaCalculation, type QuarterStatus,
+} from "@/lib/itsa";
+import { buildPnl, periodBalancesQuery } from "@/lib/reports";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { todayUK } from "@/lib/app";
 import { formatPence } from "@/lib/ledger";
 import { disconnectItsa, itsaCalculate, itsaFinalDeclaration, itsaSendFigures, itsaStatus, startItsaAuth } from "@/lib/itsa.functions";
 
 const gbp = (n: number | null) => (n === null ? "—" : formatPence(Math.round(n * 100)));
+const STATUS: Record<QuarterStatus, { text: string; cls: string }> = {
+  sent: { text: "Sent", cls: "bg-primary/10 text-primary" },
+  due: { text: "Ready to send", cls: "bg-accent/30" },
+  overdue: { text: "Overdue", cls: "bg-destructive/10 text-destructive" },
+  open: { text: "Quarter not ended", cls: "bg-muted text-muted-foreground" },
+};
+const short = (iso: string) => ukDate(iso).replace(/ \d{4}$/, "");
 
 export function ItsaPanel({ businessId, startYear }: { businessId: string; startYear: number }) {
   const qc = useQueryClient();
@@ -36,6 +48,15 @@ export function ItsaPanel({ businessId, startYear }: { businessId: string; start
       .eq("business_id", businessId).eq("tax_year", taxYear).order("submitted_at", { ascending: false }).limit(10)).data ?? [],
   });
   const declared = (hist.data ?? []).some((h) => h.kind === "final");
+  const today = todayUK();
+  const quarters = itsaQuarters(startYear);
+  const sentTo = (hist.data ?? []).filter((h) => h.kind === "figures")
+    .map((h) => (h.figures as { to?: unknown } | null)?.to).filter((t): t is string => typeof t === "string");
+  const [picked, setPicked] = useState<number | null>(null);
+  const quarter = quarters[(picked ?? nextQuarter(quarters, today, sentTo).n) - 1]!;
+  const qStatus = quarterStatus(quarter, today, sentTo);
+  const qBooks = useQuery({ ...periodBalancesQuery(businessId, quarter.from, quarter.to), enabled: qStatus !== "open" });
+  const qPnl = buildPnl(qBooks.data ?? []);
 
   async function run<T>(key: string, fn: () => Promise<T>, ok?: (r: T) => void) {
     setBusy(key);
@@ -56,6 +77,28 @@ export function ItsaPanel({ businessId, startYear }: { businessId: string; start
       </div>
       <p className="mt-1 text-sm text-muted-foreground">Making Tax Digital for Income Tax: send your self-employment figures, see HMRC's Income Tax and Class 4 calculation, then make the final declaration after 5 April.</p>
 
+      <ul className="mt-3 divide-y rounded-md border text-sm" aria-label="Quarterly update deadlines">
+        {quarters.map((q) => {
+          const st = STATUS[quarterStatus(q, today, sentTo)];
+          return (
+            <li key={q.n} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3 py-2">
+              <span><span className="font-medium">Q{q.n}</span> · {short(q.from)} – {ukDate(q.to)}</span>
+              <span className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">due {ukDate(q.deadline)}</span>
+                <span className={"rounded px-2 py-0.5 text-xs font-medium " + st.cls}>{st.text}</span>
+              </span>
+            </li>
+          );
+        })}
+        <li className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3 py-2">
+          <span className="font-medium">Final declaration</span>
+          <span className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">due {ukDate(finalDeclarationDeadline(startYear))}</span>
+            <span className={"rounded px-2 py-0.5 text-xs font-medium " + (declared ? STATUS.sent.cls : STATUS.open.cls)}>{declared ? "Sent" : ended ? "Ready when you are" : "After 5 April"}</span>
+          </span>
+        </li>
+      </ul>
+
       {q.isLoading ? <p className="mt-3 text-sm">Checking HMRC…</p> : !s?.configured ? (
         <p className="mt-3 text-sm">AVENZA isn't linked to an HMRC developer app yet. Once the sandbox client ID and secret are added, you can connect here.</p>
       ) : !s.status ? (
@@ -70,11 +113,37 @@ export function ItsaPanel({ businessId, startYear }: { businessId: string; start
         <div className="mt-3 grid gap-3">
           <p className="text-sm">Connected for NI number {s.status.nino_hint}{s.status.expired ? " · sign-in will refresh on next send" : ""}.</p>
           {declared ? <p className="text-sm font-medium">Final declaration sent for {taxYear.replace("-", "/")}.</p> : s.canPost && (
-            <div className="grid gap-2 sm:flex sm:flex-wrap">
-              <Button className="h-11 sm:h-10" disabled={busy !== null} onClick={() => run("send", () => send({ data: { businessId, taxYear, fraud: collectHmrcFraudData() } }), () => { toast.success("Figures sent to HMRC"); void hist.refetch(); })}>
-                {busy === "send" ? "Sending…" : "1. Send figures to HMRC"}</Button>
+            <div className="grid gap-3">
+              <div className="rounded-md border p-3">
+                <div className="grid gap-2 sm:flex sm:items-end sm:gap-3">
+                  <div className="grid gap-1">
+                    <Label htmlFor="itsa-quarter">Quarterly update</Label>
+                    <Select value={String(quarter.n)} onValueChange={(v) => setPicked(Number(v))}>
+                      <SelectTrigger id="itsa-quarter" className="h-11 sm:h-10 sm:w-64"><SelectValue /></SelectTrigger>
+                      <SelectContent>{quarters.map((q) => <SelectItem key={q.n} value={String(q.n)}>Q{q.n} · to {ukDate(q.to)}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Due by {ukDate(quarter.deadline)}. Each update covers 6 April to the quarter end; sending again replaces it.</p>
+                </div>
+                {qStatus === "open" ? (
+                  <p className="mt-3 text-sm">This quarter ends on {ukDate(quarter.to)}. You can send it from the next day.</p>
+                ) : (
+                  <>
+                    <dl className="mt-3 grid grid-cols-2 gap-1 text-sm">
+                      <dt>Income, {short(quarter.from)} – {short(quarter.to)}</dt><dd className="text-right tabular-nums">{qBooks.isLoading ? "…" : formatPence(qPnl.totalIncome)}</dd>
+                      <dt>Expenses</dt><dd className="text-right tabular-nums">{qBooks.isLoading ? "…" : formatPence(qPnl.totalExpenses)}</dd>
+                      <dt className="font-semibold">Profit</dt><dd className="text-right font-semibold tabular-nums">{qBooks.isLoading ? "…" : formatPence(qPnl.profit)}</dd>
+                    </dl>
+                    <Button className="mt-3 h-11 w-full sm:h-10 sm:w-auto" disabled={busy !== null || qBooks.isLoading || qBooks.isError}
+                      onClick={() => run("send", () => send({ data: { businessId, taxYear, quarter: quarter.n, fraud: collectHmrcFraudData() } }), () => { toast.success(`Q${quarter.n} update sent to HMRC`); void hist.refetch(); })}>
+                      {busy === "send" ? "Sending…" : qStatus === "sent" ? `Send Q${quarter.n} again (correction)` : `1. Send Q${quarter.n} update to HMRC`}</Button>
+                  </>
+                )}
+              </div>
+              <div className="grid gap-2 sm:flex sm:flex-wrap">
               <Button variant="outline" className="h-11 sm:h-10" disabled={busy !== null} onClick={() => run("calc", () => calculate({ data: { businessId, taxYear, fraud: collectHmrcFraudData() } }), (r) => { if (!("error" in r)) setCalc({ id: r.calculationId, type: r.type, calc: r.calc }); })}>
                 {busy === "calc" ? "Calculating…" : "2. Get HMRC's calculation"}</Button>
+              </div>
             </div>
           )}
           {calc && (
@@ -98,7 +167,7 @@ export function ItsaPanel({ businessId, startYear }: { businessId: string; start
           ) : <p className="text-xs text-muted-foreground">The final declaration opens after the tax year ends on 5 April.</p>)}
           {(hist.data ?? []).length > 0 && (
             <ul className="text-xs text-muted-foreground">
-              {hist.data!.map((h) => <li key={h.id}>{new Date(h.submitted_at).toLocaleString("en-GB")} · {h.kind === "final" ? "Final declaration" : "Figures sent"}{h.is_sandbox ? " (sandbox)" : ""}</li>)}
+              {hist.data!.map((h) => <li key={h.id}>{new Date(h.submitted_at).toLocaleString("en-GB")} · {h.kind === "final" ? "Final declaration" : sentLabel(h.figures)}{h.is_sandbox ? " (sandbox)" : ""}</li>)}
             </ul>
           )}
           {s.canPost && <Button variant="ghost" size="sm" className="w-fit" disabled={busy !== null} onClick={() => run("drop", () => drop({ data: { businessId } }), () => qc.invalidateQueries({ queryKey: ["itsa-status", businessId] }))}>Disconnect HMRC</Button>}
@@ -106,4 +175,9 @@ export function ItsaPanel({ businessId, startYear }: { businessId: string; start
       )}
     </section>
   );
+}
+
+function sentLabel(figures: unknown): string {
+  const f = figures as { quarter?: number; to?: string } | null;
+  return f?.quarter ? `Q${f.quarter} update sent` : f?.to ? `Figures to ${ukDate(f.to)} sent` : "Figures sent";
 }

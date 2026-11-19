@@ -72,3 +72,45 @@ export function pickSelfEmployment(json: unknown): { id: string; name: string }[
     .filter((b: any) => b?.typeOfBusiness === "self-employment" && typeof b?.businessId === "string")
     .map((b: any) => ({ id: b.businessId as string, name: typeof b.tradingName === "string" ? b.tradingName : "Self-employment" }));
 }
+
+export type ItsaQuarter = { n: 1 | 2 | 3 | 4; from: string; to: string; deadline: string };
+
+/**
+ * HMRC's standard quarterly update periods for a tax year. Updates are cumulative: each one covers
+ * 6 April to the end of that quarter, and is due by the 7th of the month after the quarter ends.
+ */
+export function itsaQuarters(startYear: number): ItsaQuarter[] {
+  const y = startYear, n = startYear + 1, from = `${y}-04-06`;
+  return [
+    { n: 1, from, to: `${y}-07-05`, deadline: `${y}-08-07` },
+    { n: 2, from, to: `${y}-10-05`, deadline: `${y}-11-07` },
+    { n: 3, from, to: `${n}-01-05`, deadline: `${n}-02-07` },
+    { n: 4, from, to: `${n}-04-05`, deadline: `${n}-05-07` },
+  ];
+}
+
+/** The final declaration for a tax year is due by 31 January after it ends. */
+export function finalDeclarationDeadline(startYear: number): string {
+  return `${startYear + 2}-01-31`;
+}
+
+export type QuarterStatus = "open" | "due" | "overdue" | "sent";
+
+/** "open": the quarter hasn't ended, so it can't be sent yet. `sentTo` lists period ends already sent. */
+export function quarterStatus(q: ItsaQuarter, today: string, sentTo: string[]): QuarterStatus {
+  if (sentTo.includes(q.to)) return "sent";
+  if (today <= q.to) return "open";
+  return today > q.deadline ? "overdue" : "due";
+}
+
+/** The quarter to offer first: the earliest ended one not yet sent, else the latest ended, else Q1. */
+export function nextQuarter(quarters: ItsaQuarter[], today: string, sentTo: string[]): ItsaQuarter {
+  const ended = quarters.filter((q) => today > q.to);
+  return ended.find((q) => !sentTo.includes(q.to)) ?? ended[ended.length - 1] ?? quarters[0]!;
+}
+
+/** "2026-08-07" → "7 Aug 2026" */
+export function ukDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${d} ${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][m! - 1]} ${y}`;
+}
