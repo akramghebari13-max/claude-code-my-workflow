@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as SubscribeRouteImport } from './routes/subscribe'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedMyFilesRouteImport } from './routes/_authenticated/my-files'
 import { Route as AuthenticatedBBusinessIdRouteImport } from './routes/_authenticated/b.$businessId'
@@ -26,6 +27,7 @@ import { Route as AuthenticatedBBusinessIdSettingsRouteImport } from './routes/_
 import { Route as AuthenticatedBBusinessIdTrialBalanceRouteImport } from './routes/_authenticated/b.$businessId.trial-balance'
 import { Route as AuthenticatedBBusinessIdVatRouteImport } from './routes/_authenticated/b.$businessId.vat'
 import { Route as ApiPublicHmrcCallbackRouteImport } from './routes/api/public/hmrc/callback'
+import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe/webhook'
 import { Route as AuthenticatedBBusinessIdInvoicesInvoiceIdRouteImport } from './routes/_authenticated/b.$businessId.invoices_.$invoiceId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -40,6 +42,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubscribeRoute = SubscribeRouteImport.update({
+  id: '/subscribe',
+  path: '/subscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -123,6 +130,11 @@ const ApiPublicHmrcCallbackRoute = ApiPublicHmrcCallbackRouteImport.update({
   path: '/api/public/hmrc/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
+  id: '/api/public/stripe/webhook',
+  path: '/api/public/stripe/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedBBusinessIdInvoicesInvoiceIdRoute =
   AuthenticatedBBusinessIdInvoicesInvoiceIdRouteImport.update({
     id: '/invoices_/$invoiceId',
@@ -133,6 +145,7 @@ const AuthenticatedBBusinessIdInvoicesInvoiceIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/subscribe': typeof SubscribeRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/my-files': typeof AuthenticatedMyFilesRoute
   '/b/$businessId': typeof AuthenticatedBBusinessIdRouteWithChildren
@@ -146,12 +159,14 @@ export interface FileRoutesByFullPath {
   '/b/$businessId/trial-balance': typeof AuthenticatedBBusinessIdTrialBalanceRoute
   '/b/$businessId/vat': typeof AuthenticatedBBusinessIdVatRoute
   '/api/public/hmrc/callback': typeof ApiPublicHmrcCallbackRoute
+  '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/b/$businessId/': typeof AuthenticatedBBusinessIdIndexRoute
   '/b/$businessId/invoices/$invoiceId': typeof AuthenticatedBBusinessIdInvoicesInvoiceIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/subscribe': typeof SubscribeRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/my-files': typeof AuthenticatedMyFilesRoute
   '/businesses/new': typeof AuthenticatedBusinessesNewRoute
@@ -164,6 +179,7 @@ export interface FileRoutesByTo {
   '/b/$businessId/trial-balance': typeof AuthenticatedBBusinessIdTrialBalanceRoute
   '/b/$businessId/vat': typeof AuthenticatedBBusinessIdVatRoute
   '/api/public/hmrc/callback': typeof ApiPublicHmrcCallbackRoute
+  '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/b/$businessId': typeof AuthenticatedBBusinessIdIndexRoute
   '/b/$businessId/invoices/$invoiceId': typeof AuthenticatedBBusinessIdInvoicesInvoiceIdRoute
 }
@@ -172,6 +188,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/subscribe': typeof SubscribeRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/my-files': typeof AuthenticatedMyFilesRoute
   '/_authenticated/b/$businessId': typeof AuthenticatedBBusinessIdRouteWithChildren
@@ -185,6 +202,7 @@ export interface FileRoutesById {
   '/_authenticated/b/$businessId/trial-balance': typeof AuthenticatedBBusinessIdTrialBalanceRoute
   '/_authenticated/b/$businessId/vat': typeof AuthenticatedBBusinessIdVatRoute
   '/api/public/hmrc/callback': typeof ApiPublicHmrcCallbackRoute
+  '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/b/$businessId/': typeof AuthenticatedBBusinessIdIndexRoute
   '/_authenticated/b/$businessId/invoices_/$invoiceId': typeof AuthenticatedBBusinessIdInvoicesInvoiceIdRoute
 }
@@ -193,6 +211,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/subscribe'
     | '/dashboard'
     | '/my-files'
     | '/b/$businessId'
@@ -206,12 +225,14 @@ export interface FileRouteTypes {
     | '/b/$businessId/trial-balance'
     | '/b/$businessId/vat'
     | '/api/public/hmrc/callback'
+    | '/api/public/stripe/webhook'
     | '/b/$businessId/'
     | '/b/$businessId/invoices/$invoiceId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/subscribe'
     | '/dashboard'
     | '/my-files'
     | '/businesses/new'
@@ -224,6 +245,7 @@ export interface FileRouteTypes {
     | '/b/$businessId/trial-balance'
     | '/b/$businessId/vat'
     | '/api/public/hmrc/callback'
+    | '/api/public/stripe/webhook'
     | '/b/$businessId'
     | '/b/$businessId/invoices/$invoiceId'
   id:
@@ -231,6 +253,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/subscribe'
     | '/_authenticated/dashboard'
     | '/_authenticated/my-files'
     | '/_authenticated/b/$businessId'
@@ -244,6 +267,7 @@ export interface FileRouteTypes {
     | '/_authenticated/b/$businessId/trial-balance'
     | '/_authenticated/b/$businessId/vat'
     | '/api/public/hmrc/callback'
+    | '/api/public/stripe/webhook'
     | '/_authenticated/b/$businessId/'
     | '/_authenticated/b/$businessId/invoices_/$invoiceId'
   fileRoutesById: FileRoutesById
@@ -252,7 +276,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  SubscribeRoute: typeof SubscribeRoute
   ApiPublicHmrcCallbackRoute: typeof ApiPublicHmrcCallbackRoute
+  ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -276,6 +302,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subscribe': {
+      id: '/subscribe'
+      path: '/subscribe'
+      fullPath: '/subscribe'
+      preLoaderRoute: typeof SubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/dashboard': {
@@ -376,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHmrcCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/stripe/webhook': {
+      id: '/api/public/stripe/webhook'
+      path: '/api/public/stripe/webhook'
+      fullPath: '/api/public/stripe/webhook'
+      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/b/$businessId/invoices_/$invoiceId': {
       id: '/_authenticated/b/$businessId/invoices_/$invoiceId'
       path: '/invoices/$invoiceId'
@@ -444,7 +484,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  SubscribeRoute: SubscribeRoute,
   ApiPublicHmrcCallbackRoute: ApiPublicHmrcCallbackRoute,
+  ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

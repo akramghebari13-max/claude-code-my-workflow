@@ -120,6 +120,13 @@
       "when": 1795084616914,
       "tag": "0016_pf_drop_assistant_take_slot",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1795099000000,
+      "tag": "0017_subscriptions",
+      "breakpoints": true
     }
   ]
 }

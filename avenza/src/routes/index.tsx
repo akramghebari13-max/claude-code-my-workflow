@@ -16,6 +16,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { UkMapHero } from "@/components/uk-map-hero";
+import { PLAN, PLAN_PRICE_TEXT } from "@/lib/billing";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -32,16 +33,14 @@ export const Route = createFileRoute("/")({
 });
 
 /**
- * Pricing stays hidden (section and nav link) until real prices are set here, so no placeholder
- * prices ever appear on the public site. Example:
- * { soleTrader: "£10", limited: "£20", period: "per month", extras: "Optional extras are priced separately." }
+ * One plan for everything. Set to null to hide the pricing section and nav link.
+ * The amount charged is set in src/lib/billing.ts (PLAN); keep the two in step.
  */
-const PRICES = null as null | {
-  soleTrader: string;
-  limited: string;
-  period: string;
-  extras?: string;
-};
+const PRICES = {
+  price: PLAN_PRICE_TEXT,
+  period: `per month, after a ${PLAN.trialDays}-day free trial`,
+  extras: "One subscription covers every business you run and My Files. Cancel any time before the trial ends and you won't be charged.",
+} as null | { price: string; period: string; extras?: string };
 
 const AUDIENCE = [
   {
@@ -83,17 +82,21 @@ const LEDGER: { caption: string; rows: [string, string, string][] }[] = [
   { caption: "Materials bought", rows: [["Materials", "340.00", ""], ["Bank", "", "340.00"]] },
 ];
 
-const PLAN_FEATURES = {
-  soleTrader: ["Double-entry books", "Invoices", "VAT records", "Self Assessment records", "Full change history"],
-  limited: ["Double-entry books", "Invoices", "VAT records", "Year-end records", "Full change history"],
-};
+const PLAN_FEATURES = [
+  "Sole traders and limited companies, as many as you run",
+  "Double-entry books, invoices and bank reconciliation",
+  "VAT returns, Self Assessment and year-end records",
+  "Reports, tax estimates and full change history",
+  "My Files for your personal finances",
+];
 
 const FAQ: [string, string][] = [
   ["Who is AVENZA for?", "UK sole traders and limited companies who want their bookkeeping, VAT and tax records in one place and in proper order."],
   ["What does double-entry mean?", "Every transaction is recorded twice: once where the money came from and once where it went. Total debits then always equal total credits, so a mistake shows up instead of hiding."],
   ["Can I keep more than one business?", "Yes. Sole traders and companies are kept apart, and each business has its own records."],
   ["Can anything change without a record?", "No. Every change is logged, so you can always see what was changed and nothing quietly disappears."],
-  ["How do I get started?", "Select Get started to create your account, then add your first business."],
+  ["How much does it cost?", "£6.99 a month for everything, after a 14-day free trial. Cancel any time before the trial ends and you won't be charged."],
+  ["How do I get started?", "Select Get started to create your account, start your free trial, then add your first business."],
 ];
 
 const navLink =
@@ -303,18 +306,13 @@ function Index() {
         <section id="pricing" className="mx-auto max-w-6xl scroll-mt-4 px-6 py-16 md:py-24">
           <h2 className={`${h2} mb-4 max-w-[680px]`}>Simple pricing. Nothing hidden.</h2>
           <p className="mb-12 max-w-[620px] text-lg leading-relaxed text-muted-foreground">
-            One price per business, shown in full. Anything extra is listed separately and never counted as included.
+            One price for everything, shown in full. No extras, no per-business charges.
           </p>
-          <div className="grid gap-6 md:grid-cols-2">
-            {(
-              [
-                ["Sole trader", PRICES.soleTrader, PLAN_FEATURES.soleTrader],
-                ["Limited company", PRICES.limited, PLAN_FEATURES.limited],
-              ] as const
-            ).map(([name, price, feats]) => (
-              <div key={name} className="rounded-2xl border bg-card p-9">
-                <p className={`${eyebrow} mb-4 text-primary`}>{name}</p>
-                <p className="font-mono text-[22px] font-medium text-primary">{price}</p>
+          <div className="max-w-xl">
+            {[PLAN_FEATURES].map((feats) => (
+              <div key="plan" className="rounded-2xl border bg-card p-9">
+                <p className={`${eyebrow} mb-4 text-primary`}>AVENZA</p>
+                <p className="font-mono text-[22px] font-medium text-primary">{PRICES.price}</p>
                 <p className="mb-6 mt-2 text-[15px] text-muted-foreground">{PRICES.period}</p>
                 <ul className="mb-8 flex flex-col gap-3 text-base">
                   {feats.map((f) => (
@@ -325,7 +323,7 @@ function Index() {
                   ))}
                 </ul>
                 <Button asChild className="h-[52px] w-full rounded-full text-base font-semibold">
-                  <Link to="/auth">Get started</Link>
+                  <Link to="/auth">Start free trial</Link>
                 </Button>
               </div>
             ))}
