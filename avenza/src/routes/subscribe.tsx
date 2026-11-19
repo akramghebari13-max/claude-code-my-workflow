@@ -219,6 +219,10 @@ function Subscribe() {
           Payments are handled by Stripe. Your records stay yours: if you stop paying, your data is
           kept, and you can come back to it by subscribing again.
         </p>
+        <p className="mt-4 flex gap-4 text-sm">
+          <Link to="/account" className="font-medium hover:underline">Account</Link>
+          <Link to="/privacy" className="font-medium hover:underline">Privacy policy</Link>
+        </p>
       </main>
     </div>
   );

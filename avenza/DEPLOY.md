@@ -28,6 +28,7 @@ Apply the two new migrations, in order. Use Lovable Cloud's SQL editor, or ask t
   in the app until something changes their row, so either choose a cut-off and set their status to
   `canceled`, or ask them to subscribe.
 - [ ] `drizzle/migrations/0018_subscription_enforcement.sql`: the database enforces the paywall.
+- [ ] `drizzle/migrations/0019_delete_account.sql`: lets people delete their account (see step 7).
 - [ ] Every person who works in a business (an accountant or staff member) needs their own subscription. Tell anyone this affects.
 - [ ] To check: sign in as a user with no subscription. You should land on **Subscribe to continue**, and the dashboard should be empty even if you open `/dashboard` directly.
 
@@ -73,9 +74,13 @@ Use Stripe **test mode** first. Switch to live keys only after step 6 passes.
 
 ## 7. App Store and Google Play (optional; the web app already installs on phones)
 
-**Blockers. Both stores will reject the app without these.**
-- [ ] **Privacy policy** page on the site, and its link in each store listing. You need one under UK GDPR anyway, since the app holds financial data.
-- [ ] **Delete account inside the app.** Apple requires this for any app where people sign up. My Files already has "delete all", but nothing deletes the account and its business records.
+Done in the app: a **privacy policy** at `/privacy` (linked from the home page, sign-in, Subscribe
+and Account) and **Delete account** under Account, which works with or without a subscription.
+Before going live:
+- [ ] Fill in your company name, address, privacy email and ICO registration number in `src/lib/legal.ts`. They show as [brackets] on the privacy page until you do. Pay the ICO data protection fee if you haven't (ico.org.uk). Have the policy read by someone who knows UK data protection law.
+- [ ] Put `https://<your site>/privacy` in each store listing.
+- [ ] **Blocker for the App Store: Sign in with Apple.** The sign-in page offers Google (and Lovable). Apple requires an app with third-party sign-in to offer Sign in with Apple as well, or it rejects the app. Enable the Apple provider in Lovable Cloud's authentication settings and add the button.
+- [ ] Test deleting an account in Stripe test mode. The Stripe customer should disappear, the person's files should be gone from storage, and they should no longer be able to sign in.
 
 Then:
 - [ ] If the site moves to its own domain, set `AVENZA_URL=https://<your domain>` before `npx cap sync`. The store apps load the live site from this address.

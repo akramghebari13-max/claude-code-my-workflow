@@ -16,6 +16,8 @@ export async function saveSubscription(userId: string, sub: Stripe.Subscription)
   const { error } = await supabaseAdmin
     .from("subscriptions")
     .upsert({ user_id: userId, ...rowFromStripeSubscription(sub) }, { onConflict: "user_id" });
+  // 23503: the person deleted their account; Stripe is reporting the cancellation that caused.
+  if (error?.code === "23503") return;
   if (error) throw new Error(`Couldn't save subscription: ${error.message}`);
 }
 

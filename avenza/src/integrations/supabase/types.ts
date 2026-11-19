@@ -1410,6 +1410,7 @@ export type Database = {
         Args: { _entry_date: string; _entry_id: string }
         Returns: string
       }
+      account_deletion_businesses: { Args: { _user_id: string }; Returns: string[] }
       acct: { Args: { _b: string; _code: string }; Returns: string }
       attach_receipt: {
         Args: { _receipt_path: string; _transaction_id: string }
@@ -1435,6 +1436,7 @@ export type Database = {
         }
         Returns: string
       }
+      delete_account_data: { Args: { _user_id: string }; Returns: string[] }
       file_vat_return: {
         Args: { _business_id: string; _end: string; _start: string }
         Returns: string

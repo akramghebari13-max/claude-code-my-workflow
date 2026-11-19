@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { friendlyError } from "@/lib/app";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
@@ -91,6 +91,7 @@ function AuthPage() {
             <button type="button" className="mt-4 text-sm text-primary underline-offset-4 hover:underline" onClick={() => setMode(mode === "signin" ? "signup" : "signin")}>
               {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
             </button>
+            <p className="mt-4 text-xs text-muted-foreground">See how we look after your information in our <Link to="/privacy" className="underline">privacy policy</Link>.</p>
           </>
         )}
       </div>

@@ -386,6 +386,7 @@ function Index() {
           <a href="#features" className="inline-flex min-h-11 items-center text-sm font-medium text-foreground hover:underline">Features</a>
           {PRICES && <a href="#pricing" className="inline-flex min-h-11 items-center text-sm font-medium text-foreground hover:underline">Pricing</a>}
           <a href="#faq" className="inline-flex min-h-11 items-center text-sm font-medium text-foreground hover:underline">FAQ</a>
+          <Link to="/privacy" className="inline-flex min-h-11 items-center text-sm font-medium text-foreground hover:underline">Privacy</Link>
           <Link to="/auth" className="inline-flex min-h-11 items-center text-sm font-medium text-foreground hover:underline">Sign in</Link>
         </nav>
       </footer>
