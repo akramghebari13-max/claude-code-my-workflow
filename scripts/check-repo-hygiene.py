@@ -47,6 +47,8 @@ ROOT_ALLOW_DIRS = {
     # Skills for Codex and Antigravity, which read .agents/skills/ at the root;
     # generated from .claude/skills/ by scripts/sync-agent-skills.py.
     ".agents",
+    # AVENZA web app (TanStack Start + Supabase), exported from Lovable.
+    "avenza",
 }
 
 # Names that mean "I was experimenting". These must not live in tracked source.
