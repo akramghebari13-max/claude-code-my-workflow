@@ -31,7 +31,12 @@ export function newNonce(): string {
  */
 export function contentSecurityPolicy(nonce?: string): string {
   return [
-    ...(nonce ? [`script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com`, "script-src-attr 'none'"] : []),
+    ...(nonce
+      ? [
+          `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com`,
+          "script-src-attr 'none'",
+        ]
+      : []),
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
