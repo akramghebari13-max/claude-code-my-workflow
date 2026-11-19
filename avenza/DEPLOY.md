@@ -29,12 +29,17 @@ Apply the two new migrations, in order. Use Lovable Cloud's SQL editor, or ask t
   `canceled`, or ask them to subscribe.
 - [ ] `drizzle/migrations/0018_subscription_enforcement.sql`: the database enforces the paywall.
 - [ ] `drizzle/migrations/0019_delete_account.sql`: lets people delete their account (see step 7).
+- [ ] `drizzle/migrations/0020_security_tightening.sql` and `0021_text_limits.sql`: security fixes (see SECURITY.md).
 - [ ] Every person who works in a business (an accountant or staff member) needs their own subscription. Tell anyone this affects.
 - [ ] To check: sign in as a user with no subscription. You should land on **Subscribe to continue**, and the dashboard should be empty even if you open `/dashboard` directly.
 
 The database rules can be tested before going live, on any machine with PostgreSQL 16 or newer:
 `db-tests/run.sh` (it applies every migration to a throwaway database and runs the subscription,
 Bank and My Files checks).
+
+## 2b. Sign-in security settings
+
+- [ ] Work through **section 2 of SECURITY.md**: redirect URLs (reset links don't work without them), minimum password length, link expiry, rate limits, CAPTCHA and sessions.
 
 ## 3. Stripe (taking payments)
 
