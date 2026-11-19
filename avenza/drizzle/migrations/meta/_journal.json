@@ -141,6 +141,13 @@
       "when": 1795110000000,
       "tag": "0019_delete_account",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1795120000000,
+      "tag": "0020_security_tightening",
+      "breakpoints": true
     }
   ]
 }

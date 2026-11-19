@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { friendlyError } from "@/lib/app";
+import { linkError, MIN_PASSWORD, passwordProblem } from "@/lib/passwords";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { LovableMark } from "@lovable.dev/cloud-auth-js/react";
@@ -34,13 +35,15 @@ const GoogleG = () => (
 function AuthPage() {
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const target = redirect ?? "/dashboard";
+  // An expired or used confirmation link lands here with the reason after #.
+  useEffect(() => { const err = linkError(window.location.hash); if (err) toast.error(err); }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => { if (data.user) navigate({ to: target }); });
@@ -51,7 +54,13 @@ function AuthPage() {
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
-    if (mode === "signup") {
+    if (mode === "reset") {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/reset-password" });
+      // Same answer whether or not the email has an account, so nobody can use this to find out.
+      if (error && /rate limit|too many/i.test(error.message)) toast.error(friendlyError(error)); else setSent(true);
+    } else if (mode === "signup") {
+      const problem = passwordProblem(password);
+      if (problem) { toast.error(problem); setBusy(false); return; }
       const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + "/dashboard", data: { full_name: name } } });
       if (error) toast.error(friendlyError(error)); else setSent(true);
     } else {
@@ -71,25 +80,39 @@ function AuthPage() {
       <div className="w-full max-w-sm rounded-xl border bg-card p-8 shadow-sm">
         <h1 className="text-3xl font-semibold text-primary">AVENZA</h1>
         {sent ? (
-          <p className="mt-6 text-sm text-muted-foreground">Check <strong className="text-foreground">{email}</strong> for a link to confirm your account.</p>
+          <div className="mt-6 grid gap-4 text-sm text-muted-foreground">
+            {mode === "reset"
+              ? <p>If <strong className="text-foreground">{email}</strong> has an AVENZA account, we've sent it a link to choose a new password. The link works once and expires in an hour.</p>
+              : <p>Check <strong className="text-foreground">{email}</strong> for a link to confirm your account.</p>}
+            <button type="button" className="w-fit text-primary underline-offset-4 hover:underline" onClick={() => { setSent(false); setMode("signin"); }}>Back to sign in</button>
+          </div>
         ) : (
           <>
-            <p className="mt-2 text-sm text-muted-foreground">{mode === "signin" ? "Sign in to your books." : "Create your account."}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{mode === "signin" ? "Sign in to your books." : mode === "signup" ? "Create your account." : "We'll email you a link to choose a new password."}</p>
+            {mode !== "reset" && <>
             <div className="mt-6 grid gap-2">
               <Button type="button" variant="outline" onClick={() => social("google")}><GoogleG />Continue with Google</Button>
               <Button type="button" variant="outline" onClick={() => social("lovable")}><LovableMark className="size-[18px]" />Continue with Lovable</Button>
             </div>
             <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" />or<span className="h-px flex-1 bg-border" /></div>
-            <form onSubmit={submit} className="grid gap-4">
+            </>}
+            <form onSubmit={submit} className={"grid gap-4" + (mode === "reset" ? " mt-6" : "")}>
               {mode === "signup" && (
                 <div className="grid gap-1.5"><Label htmlFor="name">Full name</Label><Input id="name" value={name} onChange={(e) => setName(e.target.value)} required /></div>
               )}
               <div className="grid gap-1.5"><Label htmlFor="email">Email</Label><Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-              <div className="grid gap-1.5"><Label htmlFor="password">Password</Label><Input id="password" type="password" minLength={8} autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} required /></div>
-              <Button type="submit" disabled={busy}>{mode === "signin" ? "Sign in" : "Create account"}</Button>
+              {mode !== "reset" && (
+                <div className="grid gap-1.5">
+                  <div className="flex items-baseline justify-between"><Label htmlFor="password">Password</Label>
+                    {mode === "signin" && <button type="button" className="text-xs text-primary underline-offset-4 hover:underline" onClick={() => setMode("reset")}>Forgot your password?</button>}</div>
+                  <Input id="password" type="password" minLength={mode === "signup" ? MIN_PASSWORD : undefined} maxLength={72} autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  {mode === "signup" && <p className="text-xs text-muted-foreground">At least {MIN_PASSWORD} characters.</p>}
+                </div>
+              )}
+              <Button type="submit" disabled={busy}>{mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : busy ? "Sending…" : "Send reset link"}</Button>
             </form>
             <button type="button" className="mt-4 text-sm text-primary underline-offset-4 hover:underline" onClick={() => setMode(mode === "signin" ? "signup" : "signin")}>
-              {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
+              {mode === "signin" ? "New here? Create an account" : mode === "signup" ? "Already have an account? Sign in" : "Back to sign in"}
             </button>
             <p className="mt-4 text-xs text-muted-foreground">See how we look after your information in our <Link to="/privacy" className="underline">privacy policy</Link>.</p>
           </>

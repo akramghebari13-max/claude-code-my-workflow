@@ -17,6 +17,11 @@ export function useCanPost(businessId: string) {
 }
 
 const KNOWN: [RegExp, string][] = [
+  [/rate limit|too many requests|over_request_rate_limit|over_email_send_rate_limit/i, "Too many attempts. Wait a few minutes and try again."],
+  [/Invalid login credentials/i, "Wrong email or password."],
+  [/Email not confirmed/i, "Confirm your email first: open the link we sent you."],
+  [/weak|pwned|Password should|known to be/i, "Choose a stronger password: at least 10 characters, and not one that has appeared in a data breach."],
+  [/same.*password|New password should be different/i, "Choose a password you haven't used here before."],
   [/row-level security|permission denied|Not allowed/i, "You don't have permission to do that for this business."],
   [/JWT|session/i, "Your session has expired. Please sign in again."],
   [/Failed to fetch|NetworkError|network/i, "Couldn't reach the server. Check your connection and try again."],
