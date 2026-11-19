@@ -2,7 +2,13 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
-import { httpsRedirect, withSecurityHeaders } from "./lib/security-headers";
+import {
+  copyWithHeaders,
+  httpsRedirect,
+  newNonce,
+  NONCE_HEADER,
+  withSecurityHeaders,
+} from "./lib/security-headers";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -50,7 +56,15 @@ function isH3SwallowedErrorBody(body: string): boolean {
 // twice and renders garbled.
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
-    return withSecurityHeaders(httpsRedirect(request) ?? (await respond(request, env, ctx)));
+    const redirect = httpsRedirect(request);
+    if (redirect) return withSecurityHeaders(redirect);
+    // Production only: the dev server (and Lovable's preview) inject scripts that carry no nonce.
+    const nonce = import.meta.env.DEV ? undefined : newNonce();
+    const headers = new Headers(request.headers);
+    headers.delete(NONCE_HEADER); // never accept one from outside
+    if (nonce) headers.set(NONCE_HEADER, nonce);
+    const response = await respond(copyWithHeaders(request, headers), env, ctx);
+    return withSecurityHeaders(response, nonce);
   },
 };
 

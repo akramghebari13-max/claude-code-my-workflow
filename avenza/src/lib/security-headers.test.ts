@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { httpsRedirect, withSecurityHeaders } from "./security-headers";
+import {
+  contentSecurityPolicy,
+  copyWithHeaders,
+  httpsRedirect,
+  newNonce,
+  withSecurityHeaders,
+} from "./security-headers";
 
 describe("HTTPS everywhere", () => {
   it("sends plain-HTTP visitors to the HTTPS address, keeping the path", () => {
@@ -33,6 +39,7 @@ describe("security headers", () => {
     expect(r.headers.get("strict-transport-security")).toBe("max-age=31536000; includeSubDomains");
     expect(r.headers.get("x-content-type-options")).toBe("nosniff");
     const csp = r.headers.get("content-security-policy")!;
+    expect(csp).not.toContain("script-src"); // development: scripts unrestricted
     expect(csp).toContain("object-src 'none'");
     expect(csp).toContain("frame-ancestors 'self'");
     expect(csp).not.toContain("*;");
@@ -40,5 +47,34 @@ describe("security headers", () => {
   it("works on responses whose headers can't be changed", () => {
     const frozen = Response.redirect("https://avenza.example/", 302);
     expect(withSecurityHeaders(frozen).headers.get("location")).toBe("https://avenza.example/");
+  });
+});
+
+describe("script nonce", () => {
+  it("is fresh for every request", () => {
+    const seen = new Set(Array.from({ length: 50 }, newNonce));
+    expect(seen.size).toBe(50);
+    expect([...seen][0]).toMatch(/^[A-Za-z0-9+/]{24}$/);
+  });
+  it("lets only the app's own and nonce-stamped scripts run, and no inline handlers", () => {
+    const csp = contentSecurityPolicy("abc123");
+    expect(csp).toContain("script-src 'self' 'nonce-abc123'");
+    expect(csp).toContain("script-src-attr 'none'");
+    expect(csp).not.toContain("unsafe-inline");
+    expect(
+      withSecurityHeaders(new Response("x"), "abc123").headers.get("content-security-policy"),
+    ).toBe(csp);
+  });
+  it("copies a request with new headers, keeping method and body", async () => {
+    const h = new Headers({ "content-type": "application/json", "x-test": "1" });
+    const post = copyWithHeaders(
+      new Request("https://a.example/_serverFn/x", { method: "POST", body: '{"a":1}' }),
+      h,
+    );
+    expect(post.method).toBe("POST");
+    expect(post.headers.get("x-test")).toBe("1");
+    expect(await post.text()).toBe('{"a":1}');
+    const get = copyWithHeaders(new Request("https://a.example/p?q=1"), h);
+    expect(get.url).toBe("https://a.example/p?q=1");
   });
 });
