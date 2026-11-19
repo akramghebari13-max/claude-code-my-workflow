@@ -40,6 +40,7 @@ Bank and My Files checks).
 ## 2b. Sign-in security settings
 
 - [ ] Work through **section 2 of SECURITY.md**: redirect URLs (reset links don't work without them), minimum password length, link expiry, rate limits, CAPTCHA and sessions.
+- [ ] CAPTCHA: add the Turnstile **site key** to the app (`VITE_TURNSTILE_SITE_KEY`) and the **secret key** to Supabase Auth at the same time. Then check the "human check" appears on the sign-in page and that you can sign in.
 
 ## 3. Stripe (taking payments)
 

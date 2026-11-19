@@ -33,7 +33,12 @@ the app running on this machine.
 - [ ] **Passwords:** minimum length **10**. Turn on **leaked password protection**, which rejects passwords known from data breaches (a Supabase Pro feature).
 - [ ] **Email link expiry:** keep it at 1 hour (3600 seconds) or less. The app tells people the link expires in an hour.
 - [ ] **Rate limits:** check the sign-in, sign-up and email limits. Keep the email limit low; it stops your address being used to spam people.
-- [ ] **CAPTCHA** (Cloudflare Turnstile or hCaptcha) on sign-up, sign-in and password reset: the strongest protection against password guessing. The sign-in page needs a small change to show it; I can add that once you have the keys.
+- [ ] **CAPTCHA** on sign-up, sign-in and password reset: the strongest protection against password guessing. **The app side is built** (Cloudflare Turnstile) and stays off until you switch it on. To switch it on, both halves are needed, at the same time:
+  1. In Cloudflare (free): Turnstile → Add site, with your live domain. You get a **site key** and a **secret key**.
+  2. In Lovable Cloud → Authentication → Bot and abuse protection (or Supabase → Auth → Attack protection): turn CAPTCHA on, choose Turnstile, and paste the **secret key**.
+  3. In the project's settings, add `VITE_TURNSTILE_SITE_KEY` = the **site key**, then republish.
+
+  If CAPTCHA is on in Supabase without the site key in the app, nobody can sign in, so do steps 2 and 3 together.
 - [ ] **Sessions:** keep the token lifetime at 1 hour or less, with refresh-token rotation on (both Supabase defaults).
 - [ ] **Confirm email** on, and **secure email change** on.
 - [ ] Optional: two-factor sign-in (MFA) for accounts that file with HMRC.
@@ -52,6 +57,13 @@ the app running on this machine.
 
   Only signed-in subscribers get AI at all, nobody can read or reset their own count, and if the check fails, no AI call is made. Over the limit, bank suggestions are simply not offered, and the other features say the limit resets within 24 hours. *This reverses an earlier decision (migration 0016) that My Files questions are unlimited*; the limits are deliberately generous. Change them in `ai_daily_limit` in that migration.
 - **Sign in with Apple**, which Apple requires because the app offers Google sign-in. See DEPLOY.md for switching it on.
+- **CAPTCHA, ready to switch on** (section 2). Tested on a production build, with a stand-in for Cloudflare's widget because Cloudflare is unreachable from this environment:
+  - sign-in stays disabled until the check is done;
+  - Supabase receives the check's token with each sign-in, sign-up and reset request;
+  - every attempt gets a fresh token;
+  - the script-blocking policy raises no violations.
+
+  The real widget still needs a test on the live site once your keys are in.
 
 **Assessed, not done: script-proof (HttpOnly) cookie sessions.** I measured this before changing anything:
 - **The usual library (`@supabase/ssr`) doesn't help.** It keeps the session in a cookie that page scripts can still read, so it's no safer than now.
@@ -68,7 +80,7 @@ My recommendation is to leave it, or do it as its own project tested against a s
 ## 4. How it was tested
 
 - `db-tests/run.sh`: **179 database checks pass**, including the whole-database security test, the oversized-text test and the AI limits.
-- `bun run test`: **173 app tests pass**, including HTTPS redirects and headers, the per-request nonce, password rules, expired reset links and the AI allowance.
+- `bun run test`: **176 app tests pass**, including HTTPS redirects and headers, the per-request nonce, password rules, expired reset links and the AI allowance.
 - Typecheck, lint and production build are clean.
 - In a real browser on the running app:
   - the home page, privacy page and sign-in page load with no errors under the new headers;

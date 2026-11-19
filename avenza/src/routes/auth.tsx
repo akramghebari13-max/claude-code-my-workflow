@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { friendlyError } from "@/lib/app";
 import { linkError, MIN_PASSWORD, passwordProblem } from "@/lib/passwords";
+import { Captcha, captchaEnabled } from "@/components/captcha";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { LovableMark } from "@lovable.dev/cloud-auth-js/react";
@@ -46,6 +47,10 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const target = redirect ?? "/dashboard";
+  const needCaptcha = captchaEnabled();
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaRound, setCaptchaRound] = useState(0);
+  const captcha = captchaToken ? { captchaToken } : {};
   // An expired or used confirmation link lands here with the reason after #.
   useEffect(() => { const err = linkError(window.location.hash); if (err) toast.error(err); }, []);
 
@@ -57,20 +62,23 @@ function AuthPage() {
 
   async function submit(e: FormEvent) {
     e.preventDefault();
+    if (needCaptcha && !captchaToken) { toast.error("Complete the check above the button first."); return; }
     setBusy(true);
     if (mode === "reset") {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/reset-password" });
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/reset-password", ...captcha });
       // Same answer whether or not the email has an account, so nobody can use this to find out.
-      if (error && /rate limit|too many/i.test(error.message)) toast.error(friendlyError(error)); else setSent(true);
+      if (error && /rate limit|too many|captcha/i.test(error.message)) toast.error(friendlyError(error)); else setSent(true);
     } else if (mode === "signup") {
       const problem = passwordProblem(password);
       if (problem) { toast.error(problem); setBusy(false); return; }
-      const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + "/dashboard", data: { full_name: name } } });
+      const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + "/dashboard", data: { full_name: name }, ...captcha } });
       if (error) toast.error(friendlyError(error)); else setSent(true);
     } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email, password, options: captcha });
       if (error) toast.error(friendlyError(error));
     }
+    // Each check works once: get a fresh one for the next attempt.
+    if (needCaptcha) setCaptchaRound((n) => n + 1);
     setBusy(false);
   }
 
@@ -115,7 +123,8 @@ function AuthPage() {
                   {mode === "signup" && <p className="text-xs text-muted-foreground">At least {MIN_PASSWORD} characters.</p>}
                 </div>
               )}
-              <Button type="submit" disabled={busy}>{mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : busy ? "Sending…" : "Send reset link"}</Button>
+              {needCaptcha && <Captcha key={mode} onToken={setCaptchaToken} resetKey={captchaRound} />}
+              <Button type="submit" disabled={busy || (needCaptcha && !captchaToken)}>{mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : busy ? "Sending…" : "Send reset link"}</Button>
             </form>
             <button type="button" className="mt-4 text-sm text-primary underline-offset-4 hover:underline" onClick={() => setMode(mode === "signin" ? "signup" : "signin")}>
               {mode === "signin" ? "New here? Create an account" : mode === "signup" ? "Already have an account? Sign in" : "Back to sign in"}

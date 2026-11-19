@@ -58,7 +58,7 @@ describe("script nonce", () => {
   });
   it("lets only the app's own and nonce-stamped scripts run, and no inline handlers", () => {
     const csp = contentSecurityPolicy("abc123");
-    expect(csp).toContain("script-src 'self' 'nonce-abc123'");
+    expect(csp).toContain("script-src 'self' 'nonce-abc123' https://challenges.cloudflare.com;");
     expect(csp).toContain("script-src-attr 'none'");
     expect(csp).not.toContain("unsafe-inline");
     expect(

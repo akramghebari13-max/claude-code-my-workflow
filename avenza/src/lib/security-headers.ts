@@ -27,11 +27,11 @@ export function newNonce(): string {
  * With a nonce (production): only the app's own script files and inline scripts stamped with this
  * page's nonce run, and inline event handlers (onclick="…") never do. Without one (the
  * development server and Lovable's preview, which inject their own scripts) scripts aren't
- * restricted. Either way: no plugins, no base-tag tricks, and only Lovable's editor may frame it.
+ * restricted. Cloudflare's script is allowed for the sign-in human check. Either way: no plugins, no base-tag tricks, and only Lovable's editor may frame it.
  */
 export function contentSecurityPolicy(nonce?: string): string {
   return [
-    ...(nonce ? [`script-src 'self' 'nonce-${nonce}'`, "script-src-attr 'none'"] : []),
+    ...(nonce ? [`script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com`, "script-src-attr 'none'"] : []),
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
