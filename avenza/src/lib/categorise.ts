@@ -22,6 +22,16 @@ export function historyMatch(description: string, past: { text: string; category
   return best;
 }
 
+/**
+ * Past money → history for historyMatch. Matches on who was paid only: adding the description
+ * ("Screwfix" + "Hinges") stopped a bank line like "CARD PAYMENT SCREWFIX DIRECT 4417" matching.
+ */
+export function historyFromTransactions(
+  past: { counterparty: string | null; category_account_id: string }[],
+): { text: string; categoryId: string }[] {
+  return past.filter((p) => p.counterparty?.trim()).map((p) => ({ text: p.counterparty!, categoryId: p.category_account_id }));
+}
+
 export function normalise(s: string): string {
   return (s ?? "").toLowerCase().replace(/[0-9*#/\\.-]+/g, " ").replace(/\b(card|payment|ref|dd|so|fp|pos|gbp)\b/g, " ").replace(/\s+/g, " ").trim();
 }

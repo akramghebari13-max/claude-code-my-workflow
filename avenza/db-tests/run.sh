@@ -16,6 +16,7 @@ for m in "$ROOT"/drizzle/migrations/[0-9]*.sql; do
 done
 rm -f "$HERE/.last-error"
 echo "applied $(ls "$ROOT"/drizzle/migrations/[0-9]*.sql | wc -l) migrations"
+cd "$ROOT"   # tests read fixtures by path from the app folder
 status=0
 shopt -s nullglob
 for t in "$HERE"/*.test.sql "$ROOT"/src/test/*.sql; do

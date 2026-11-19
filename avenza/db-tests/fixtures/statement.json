@@ -1,0 +1,7 @@
+[
+  { "date": "2026-11-01", "description": "SMITH & CO, INV-0001", "amount_pence": 48000 },
+  { "date": "2026-11-03", "description": "CARD PAYMENT SCREWFIX DIRECT 4417", "amount_pence": -120000 },
+  { "date": "2026-11-04", "description": "MONTHLY ACCOUNT FEE", "amount_pence": -500 },
+  { "date": "2026-11-04", "description": "MONTHLY ACCOUNT FEE", "amount_pence": -500 },
+  { "date": "2026-11-05", "description": "FP JONES DESIGN LTD", "amount_pence": 25000 }
+]

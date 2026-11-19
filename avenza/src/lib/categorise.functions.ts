@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { historyMatch, pickCategory, type CatOption } from "./categorise";
+import { historyFromTransactions, historyMatch, pickCategory, type CatOption } from "./categorise";
 
 /** Suggest a category for one bank line: past history first, then Lovable AI. Never posts anything. */
 export const suggestCategory = createServerFn({ method: "POST" })
@@ -18,9 +18,9 @@ export const suggestCategory = createServerFn({ method: "POST" })
     const options = (accs ?? []) as CatOption[];
     if (!options.length) return { categoryId: null, source: null };
 
-    const { data: past } = await sb.from("transactions").select("counterparty, description, category_account_id")
+    const { data: past } = await sb.from("transactions").select("counterparty, category_account_id")
       .eq("business_id", line.business_id).is("voided_at", null).order("txn_date", { ascending: false }).limit(300);
-    const hist = historyMatch(line.description, (past ?? []).map((p) => ({ text: `${p.counterparty} ${p.description ?? ""}`, categoryId: p.category_account_id })));
+    const hist = historyMatch(line.description, historyFromTransactions(past ?? []));
     if (hist && options.some((o) => o.id === hist)) return { categoryId: hist, source: "history" };
 
     const apiKey = process.env["LOVABLE_API_KEY"];
